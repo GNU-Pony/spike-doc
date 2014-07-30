@@ -1,6 +1,6 @@
 .TH "SPIKE" "8" "2014-07-14" "GNU Pony" "GNU Pony Manual"
 .SH NAME
-spike - a package manager running on top of git
+spike - The package manager for GNU/Pony
 .SH "SYNOPSIS"
 .B
 spike
@@ -9,35 +9,38 @@ spike
 [\fIOPTION\fR]... [\fIARG\fR]...
 .SH "DESCRIPTION"
 .PP
+.\ Based on Hoofbook section 7.1 [What are software packages?]
+Software packages is a concept this is very popular for Free Software operating systems and
+distributions. Software packages are basically scripts with instructions for downloading and
+installing specific programs. With a program called a package manager, uninstallation, conflicts,
+dependencies and updates can be handled in addition to installations. Package managers also
+gives you a method for finding and installing programs you may be interested in.
+Distributions such as GNU/Linux have collections of packages in what are called package
+repositories. These are often called ports trees if they are downloaded to the users rather than
+remotely queried.
 .B
 spike
-is used to spike your system with new ponies and new versions of ponies
-(known on other systems as packages).
-.B
-spike
-uses individual commands to affect the ponies in different ways.
-Each command is mutually exclusive,
-i.e. only one command can be run at a time.
+is the standard package manager for GNU/Pony.
 .PP
-Ponies are installed using so-called 'scrolls'.
-These are written
-(for maximum simplicity and portability)
-in Python 3.
-A collection of these are distributed with
-.B
-spike
-and updated when
-.B
-spike
-is updated,
-but you can add scroll repositories on your local installation at will.
+.\ From Hoofbook section 7.2 [Package management in GNU/Pony]
+GNU/Pony’s package repository is community operated and consists for five Git branches:
+.TP
+.B core
+Recommended core packages, high priority support
+.TP
+.B extra
+Recommended packages, medium priority support
+.TP
+.B more
+Additional packages, low priority support
+.TP
+.B limbo
+Removed packages, no support
+.TP
+.B spool
+spool: Upcoming packages
 .PP
-.B
-spike
-has the capability of not only installing ponies,
-but also archiving installations
-(for easy rollback in case of system breakage,
-a must-have feature on unstable operating systems).
+The packages are further grouped into categories.
 .SH COMMANDS
 .PP
 \fB\-B, \-\-bootstrap\fR
@@ -343,7 +346,7 @@ Written by Mattias Andrée <maandree@member.fsf.org>.
 \fBshred\fR(1)
 .SH "COPYRIGHT"
 .PP
-Copyright (C) 2012, 2013, 2014  Mattias Andrée
+Copyright (C) 2014  Mattias Andrée
 .PP
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3
