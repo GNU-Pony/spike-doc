@@ -1,0 +1,63 @@
+.TH "SPIKELESS" "8" "2014-07-30" "GNU Pony" "GNU Pony Manual"
+.SH NAME
+spikeless - A lesser Spike, one without package management
+.SH "SYNOPSIS"
+.B
+spikeless
+\fISCROLL\fR \fISTARTDIR\fR \fIPINPAL\fR [private]
+.SH "DESCRIPTION"
+.PP
+.B
+spikeless
+is a minimal subset of \fBspike\fR. It is used solely
+for installating package, it cannot be used to do anything
+else and it cannot track installed packages.
+.B
+spikeless
+itself is used by spike to install package, but can be
+used by itself test installing package to somewhere else
+and then simply delete that directory.
+.PP
+.B
+spikeless
+was written so that Spike scrolls could be written and
+tested while Spike is in early developement.
+.PP
+.B
+spikeless
+has three positional manditory arguments:
+.TP
+.I scroll
+The scroll-file to install.
+.TP
+.I startdir
+The directory where files are to be downloaded
+and stored whilst the package is being compiled.
+.TP
+.I pinpal
+The root directroy of the system the package is
+to be installed to. For example, if the package
+contains the file \fI/usr/bin/spike\fR and this
+argument is \fI/mnt\fR, that file will be stored
+as \fI/mnt/usr/bin/spike\fR.
+.PP
+Additionally, if the fourth argument, without
+the scroll file as the first argument, is the
+word "private", the package will be installed
+as a private package.
+.SH "AUTHORS"
+.PP
+Written by Mattias Andrée <maandree@member.fsf.org>.
+.SH "SEE ALSO"
+.TP
+\fBspike\fR(8)
+.SH "COPYRIGHT"
+.PP
+Copyright (C) 2014  Mattias Andrée
+.PP
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+A copy of the license is included in the section entitled "GNU
+Free Documentation License".
