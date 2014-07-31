@@ -60,7 +60,20 @@ Texts. A copy of the license is included in the section entitled
 @node Overview
 @chapter Overview
 
-Lorem ipsum
+@c Based on Hoofbook section 7.1 [What are software packages?]
+Software packages is a concept this is very popular for
+Free Software operating systems and distributions. Software
+packages are basically scripts with instructions for
+downloading and installing specific programs. With a program
+called a package manager, uninstallation, conflicts,
+dependencies and updates can be handled in addition to
+installations. Package managers also gives you a method for
+finding and installing programs you may be interested in.
+Distributions such as GNU/Linux have collections of packages
+in what are called package repositories. These are often
+called ports trees if they are downloaded to the users
+rather than remotely queried. @command{spike} is the
+standard package manager for GNU/Pony.
 
 
 
