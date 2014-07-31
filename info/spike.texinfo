@@ -52,6 +52,7 @@ Texts. A copy of the license is included in the section entitled
 
 @menu
 * Overview::                        Brief overview of @command{spike}.
+* Invoking::                        Invokation of @command{spike}.
 * GNU Free Documentation License::  Copying and sharing this manual.
 @end menu
 
@@ -74,6 +75,596 @@ in what are called package repositories. These are often
 called ports trees if they are downloaded to the users
 rather than remotely queried. @command{spike} is the
 standard package manager for GNU/Pony.
+
+
+
+@node Invoking
+@chapter Invoking
+
+@menu
+* Miscellaneous options::           Miscellaneous invocation of @command{spike}.
+* Package maintenance::             Using @command{spike} for package maintenance.
+* Finding packages::                Using @command{spike} to find packages.
+* Installing packages::             Installing, uninstalling and updating packages.
+* Database manipulation::           Manipulation the package database.
+* Snapshotting::                    Archiving and rolling back stable system states.
+@end menu
+
+
+@command{spike}@footnote{Or @command{owlowiscious} if you
+prefer.} invocation syntax consists of a master option and a
+set of slave options. At most one master option can be used
+at one invocation of @command{spike}, and the slave options
+that are available depend upon that master option. The order
+of the options does not matter.
+
+Some master options support the slave option @option{--shred}.
+If @option{--shred} is used, @command{spike} will use the
+command @option{shred} when removing old data. This can be
+used to make old data unrecoverable@footnote{Does not work on
+copy-on-write filesystems unless @option{shred} is patch to
+be aware of the filesystem.} @command{spike} will also try to
+make sure that @option{shred} is used instead of @option{rm}
+and @option{unlink} by external commands.
+
+
+@node Miscellaneous options
+@section Miscellaneous options
+
+@table @option
+@item --
+Treat all following arguments as if they did not
+start with `-' or `+'.
+
+@item ++
+Treat the next argument as if it did not start
+with `-' or `+'.
+
+@item --help
+@itemx -h
+Display invocation help.
+
+@item --version
+@itemx -v
+Print the version of @command{spike} that is being used.
+
+@item --copyright
+@itemx -c
+Display copyright information about @command{spike}.
+
+@item [--interactive] [--shred]
+@itemx [-I] [--shred]
+Start interactive graphical terminal mode. In this mode
+you will be able to install and uninstall packages.
+
+@item --ride SCROLL [--private]
+@itemx -X SCROLL [-u]
+Use a scroll's instructions to execute a package.
+Executing packages without additional instructions
+is often not that easy if it does not contain exactly
+one program or a program without a graphical user
+interface, or graphical terminal user interface.
+Because of this many scrolls will instruct spike to
+open documentation for the package to help you figure
+out how to use the package.
+@end table
+
+
+@node Package maintenance
+@section Package maintenance
+
+@table @option
+@item --sha3sum FILE...
+@itemx -3 FILE...
+Calculate SHA3 checksums for files to use in scrolls,
+do not except the files to be returned in order.
+
+All arguments not starting with `-' or `+' will be
+treated as files whose checksum should be calculated.
+
+This option makes @command{spike} calculate checksums
+for files using Keccak with the configurations that
+@command{spike} scrolls uses to verify that downloaded
+source files are the expected source file. It is recommend
+to use this rather than a regular @command{sha3sum}
+command because of the risk that the configurations may
+be incorrect otherwise. If you install
+@command{spike-ckeccak} @command{spike} will use a
+libexec program written in C optimised and hardcoded
+to use @command{spike}'s configurations.
+
+@item --proofread SCROLL...
+@itemx -P SCROLL...
+Verify that scrolls are correct.
+
+All arguments not starting with `-' or `+' will be treated
+as scrolls of which to verify the correctness,
+
+Please use this before submitting a package to the repository.
+@end table
+
+
+@node Finding packages
+@section Finding packages
+
+@table @option
+@item --find SCROLL... [--written (y|yes|n|no)]
+@itemx -F SCROLL... [-w (y|yes|n|no)]
+List all scrolls whose name matches the seeked
+names specifed by any argument not starting with
+`-' or `+', with the exception of the value
+associated with @option{-w} (@option{--written}).
+
+If @option{-w} (@option{--written}) is used,
+restrict the found scrolls to either installed
+scrolls (when the associated value is either
+@option{y} or @option{yes}) or to scroll that
+have not been installed (when the associated
+value is either @option{n} or @option{no}.)
+
+The seeked names are treated as regular expressions.
+Additionally, these are splitted into three parts:
+the repository, the category and the package name.
+The pars are delimited by slashes, any missing part
+is treated as a wildcard: anything is accepted.
+For example:
+
+@table @code
+@item package
+@itemx /package
+@itemx //package
+Only look for packages whose name contain `package'
+in any category, in any repository.
+
+@item ^package
+Only look for packages whose name starts with `package'
+in any category, in any repository.
+
+@item ^a.*z$
+Look for packages whose name starts with `a' and ends
+with 'z', in any category, in any repository.
+
+@item category/package
+@itemx /category/package
+Only look for packages whose name contain `package',
+in any repository, restricted to categories whose
+name contain `category'.
+
+@item category/
+@itemx /category/
+List all packages in any category whose name contains
+`category', for all repositories.
+
+@item repository/category/package
+List packages whose name contain `package', in
+respositories whose name contain `repository',
+with restriction to categories whose name
+contain `category'.
+
+@item repository//package
+List packages whose name contain `package', in
+respositories whose name contain `repository',
+with restrictions on the category.
+
+@item repository/category/
+List all packages, in any category whose name contains
+`category', for repositories whose name contain
+`repository'.
+
+@item repository//
+List all packages, in any category, for repositories
+whose name contain `repository'.
+@end table
+
+If no patterns@footnote{Or an empty pattern, or a pattern
+containing only slashes.} have been specified, all scrolls
+will be listed.
+
+@item --find --owner FILE...
+@itemx -F -o FILE...
+List all packages which has ownership of a file or
+directory. Files can be owned by multiple packages,
+but should only be owned by one package. Directories
+may be owned by multiple packages without @command{spike}
+complaining. The reason for this that all package will
+install files to system directories such as @file{/usr}
+and those have ownership over such directories.
+
+Only installed packages are candidate for inclusion
+in the result. @command{spike} does not know what files
+a scroll will install, only what it has installed.
+
+All arguments not starting with `-' or `+' will be
+treated as files whose owner should be identified.
+
+@item --read --list SCROLL...
+@itemx -R -l SCROLL...
+List all files and directories owned by the specified
+scrolls. If no scroll has ben specified, all files and
+directories under package maintenance will be listed.
+
+All arguments not starting with `-' or `+' will be
+treated as scrolls to inspect.
+
+@item --read SCROLL... [--info FIELDS]... [--written (y|yes|n|no)]
+@itemx -R SCROLL... [-f FIELDS]... [-w (y|yes|n|no)]
+Read metainformation about a scroll. If @option{-f}
+(@option{--info}) is not used, all metainformation
+will be listed, otherwise it will be restricted to
+the specified metainformation. This metainformation
+include:
+
+@option{-f} (@option{--info}) can be used multiple
+times, but the associated value can also be a
+comma-separated list of values.
+
+@table @code
+@item FIXME
+@end table
+
+All arguments not starting with `-' or `+', and not
+associated with @option{-f} (@option{--info}) or
+@option{-w} (@option{--written}), will be treated as
+scrolls to inspect.
+
+If @option{-w} (@option{--written}) is used,
+restrict to either installed scrolls (when the
+associated value is either @option{y} or
+@option{yes}) or to scroll that have not been
+installed (when the associated value is either
+@option{n} or @option{no}.)
+
+@item --example-shot [--viewer VIEWER] [--all-at-once] SCROLL...
+@itemx -S [--viewer VIEWER] [-a] SCROLL...
+Open the example-shot assocated with a scroll.
+
+All arguments not starting with `-' or `+', and not
+associated with @option{--viewer} or @option{-a}
+(@option{--all-at-once}), will be treated as scrolls
+whose example-shots should be displayed.
+
+Few scrolls have an example-shot, a rule of thumb
+is that only fonts and themes have example-shots.
+The purpose if example-shots is not to display how
+a programs looks but rather to describe the package
+graphically. Describing a purily visible package
+is best done with graphics, graphics is however
+ineffective and a waste of space to do with functional
+packages. If you are looking for new fonts or toolkit
+themes a description would seldom be enough but a
+screenshot could be very useful.
+
+If you are not happy with the default image viewer,
+you can use the option @option{--viewer} to specify
+which command @command{spike} should use to open an
+PNG file.
+
+If @option{-a} (@option{--all-at-once}) is used,
+@command{spike} will open all example shots in one
+execution rather than opening them one-by-one as
+you close the image viewer.
+@end table
+
+
+@node Installing packages
+@section Installing packages
+
+@table @option
+@item --bootstrap [--no-verify]
+@itemx -B [--no-verify]
+Update @command{spike} and the package repository.
+This is done at the same time because their is no
+sense is only updating one of them because changes
+in once of them may, especially when @command{spike}
+is mature, cause a change in the other. Their
+development of often mutually dependent.
+
+All commits are digitally signed to assure that you
+are not being attacked. If you want to disable
+verification of the digital signatures and enforcement
+of their inclusion, use the option @option{--no-verify}.
+Disabling verification is highly discourage.
+
+However, unstable commits to @command{spike} are not
+necessarily signed.
+
+@item --write SCROLL... [--pinpal ROOT | --private] [OPTION...]
+@itemx -W SCROLL... [--pinpal ROOT | -u] [OPTION...]
+Install a new packages or update, downgrade or reinstall
+an already installed packages.
+
+All arguments not starting with `-' or `+', and not
+associated with @option{--pinpal}, will be treated as
+scrolls to install.
+
+If their for some reason are scrolls with the same name,
+perhaps you added additional repositories or frooze
+a repository. You an explicity tell @code{spike} what
+repository to install the package from and even which
+category it is in. This is done by utilising the @code{spike}
+has three parts of a package name: repository, category
+and scroll, that are slash-delimited. For example:
+
+@table @code
+@item package
+@itemx /package
+@itemx //package
+Install the package named `package'.
+
+@item category/package
+@itemx /category/package
+Install the package named `package' located in the
+category `category'.
+
+@item repository//package
+Install the package named `package' from the
+repository `repository.
+
+@item repository/category/package
+Install the package named `package' located in the
+category `category' from the repository `repository.
+@end table
+
+You can install package to another system. This is intended
+for install a new system. This is done by adding the option
+@option{--pinpal} and specifying that system's root
+directory's mountpoint on your current system. For example,
+if system you are installing has its @file{/} directory
+mounted on the installation system's @file{/mnt}, use the
+arguments @option{--pinpal /mnt}. This can also be used
+for repairing a broken system, but will probably seldom
+be used for it.
+
+If you are not installing to another system you may choose
+to make a user-private installation rather than a system-wide
+installation by using the option @option{-u}
+(@option{--private}). Some package cannot be installed this
+way. Particularly, packages installing command owned by root
+with setuid set should not be possible to install this way
+because you would not be able to execute it properly.
+There are also edge cases such as the kernel and
+initialisation systems that cannot be installed this way
+either because it can only be execute before the user logs
+in.
+
+When using @option{-W} (@option{--write}), there are a
+few additionally optional options you can use:
+
+@table @option
+@item --asdep | --asexplicit
+By default a package is installed as explicitly installed
+unless it is already installed as installed as a dependencies.
+This can be overridden by using either @option{--asdep} or
+@option{--asexplicit}. Using @option{--asdep} will flag the
+installed packages as installed as a dependencies. This means
+that if there is no package dependent upon that package installed,
+it will be removed when cleaning the system from unneeded
+packages. Using @option{--asexplicit} will flag the installed
+packages as explicitly installed. This means that if a package
+was already installed as a dependency it will no longer
+be removed when cleaning the system from unneeded packages.
+
+@item --nodep
+Ignore dependencies, install the package without installing
+any of its dependencies.
+
+@item --force
+Do not stop the user from doing something potentially stupid.
+Use of @option{--asdep} or @option{--nodep} is potentially
+stupid, but is allowed without using @option{--force}.
+
+@item --shred
+Remove old data by executing @command{shred}.
+@end table
+
+@item --erase SCROLL... [--pinpal ROOT | --private] [--shred]
+@itemx -E SCROLL... [--pinpal ROOT | -u] [--shred]
+Uninstall listed packages.
+
+All arguments not starting with `-' or `+', and not
+associated with @option{--pinpal}, will be treated as
+scrolls to uninstall.
+
+You can uninstall packages from another system. This is
+intended for removing packages accidentally installed
+when installing a new system. This is done by adding the
+option @option{--pinpal} and specifying that system's root
+directory's mountpoint on your current system. For example,
+if system you are installing has its @file{/} directory
+mounted on the installation system's @file{/mnt}, use the
+arguments @option{--pinpal /mnt}. This can also be used
+for repairing a broken system, but will probably seldom
+be used for it.
+
+If you are not uninstalling from another system you may choose
+to make a user-private uninstallation rather than a system-wide
+uninstallation by using the option @option{-u}
+(@option{--private}). This can only be done on packages that
+are installed as user-private packages.
+
+@item --update [--pinpal ROOT | --private] [--ignore SCROLLS]... [--shred]
+@itemx -U [--pinpal ROOT | -u] [-i SCROLLS]... [--shred]
+Upgrade or downgrade installed packages. Package
+downgrading is only done if you checkout an older
+revision of a repository.
+
+You can update another system. This is intended for
+repairing a broken system be downgrading all packages.
+This is done by adding the option @option{--pinpal} and
+specifying that system's root directory's mountpoint on
+your current system. For example, if system you are
+updating has its @file{/} directory mounted on the
+reparation system's @file{/mnt}, use the arguments
+@option{--pinpal /mnt}.
+
+If you are updating another system you may choose
+do an update on user-private package rather than
+system-wide package by using the option @option{-u}
+(@option{--private}).
+
+You can choose to ignore updates for a set of
+packages. This is done by listing them with
+the option @option{-i} (@option{--ignore}).
+
+@option{-i} (@option{--ignore}) can be used multiple
+times, but the associated value can also be a
+comma-separated list of values.
+
+@item --clean [--private] [--shred]
+@itemx -N [-u] [--shred]
+Uninstall packages that are installed as dependencies
+and are no longer, transversely, required by any
+explicitly installed package.
+
+The option @option{-u} (@option{--private}) can be
+used to remove user-private packages rather than
+system-wide packages.
+@end table
+
+
+@node Database manipulation
+@section Database manipulation
+
+@table @code
+@item --demote SCROLL... [--private]
+@itemx --demote SCROLL... [-u]
+Flag a package as installed as installed as a dependency.
+This is similar to reinstalling a package using
+@option{--write --asdep}, the difference is, the package
+will not be compiled or reinstalled, only reflagged in
+the database.
+
+All arguments not starting with `-' or `+'  will be
+treated as scrolls to demote.
+
+The option @option{-u} (@option{--private}) can be
+used to demote user-private packages rather than
+system-wide packages.
+
+@item --promote SCROLL... [--private]
+@itemx --promote SCROLL... [-u]
+Flag a package as installed as a explicitly installed.
+This is similar to reinstalling a package using
+@option{--write --asexplicit}, the difference is,
+the package will not be compiled or reinstalled, only
+reflagged in the database. premote package to an
+explicitly installed package
+
+All arguments not starting with `-' or `+'  will be
+treated as scrolls to promote.
+
+The option @option{-u} (@option{--private}) can be
+used to promote user-private packages rather than
+system-wide packages.
+
+@item --claim FILE... [--recursive | --entire] [--force] [--private] SCROLL
+@itemx -C FILE... [--recursive | --entire] [--force] [-u] SCROLL
+Mark files as owned by a specified scroll. If the scroll
+does not exist it will be added to the database.
+
+You could for example specify the scroll `scroll'
+
+All arguments not starting with `-' or `+'  will be
+treated as files to claim and, the last one, as the
+package those files should belong to.
+
+If a non-directory file is already owned by a package,
+the option @option{--force} must be used.
+
+The option @option{-u} (@option{--private}) can be
+used to rather to a user-private package rather than
+a system-wide package.
+
+Using @option{--recursive} will add all subfiles and
+subdirectories of the selected directories to be claimed.
+
+Using @option{--entire} will claim the file or directory
+and any future subfiles and subdirectories.
+
+@option{--recursive} and @option{--entire} cannot
+be combined. If neither is used, only the listed
+files and directories will be claim, but none of
+their subfiles and subdirectories.
+
+@item --disclaim FILE... [--recursive] [--private] SCROLL
+@itemx -D FILE... [--recursive] [-u] SCROLL
+Make files as not owned by a scroll.
+
+All arguments not starting with `-' or `+'  will be
+treated as files to disclaim and, the last one, as the
+package those files should belong to.
+
+The option @option{-u} (@option{--private}) can be
+used to rather to a user-private package rather than
+a system-wide package.
+
+Using @option{--recursive} will add all subfiles and
+subdirectories of the selected directories to be
+disclaimed.
+
+Claimed by recursion with @option{--entire} will be
+disclaimed once none of its superdirectories are
+claimed with @option{--entire}.
+@end table
+
+
+@node Snapshotting
+@section Snapshotting
+
+@table @code
+@item --archive [--scrolls] ARCHIVE
+@itemx -A [-s] ARCHIVE
+Create an archive of everything that is installed.
+
+If @option{--scrolls} is used, only the scroll versions
+and file claims are stored and used at restore.
+
+The only argument not starting with `-' or `+' will be
+treated as the pathname to use for the archive that is
+created.
+
+@item --restore-archive ARCHIVE [OPTION...]
+Rollback the system to a snapshot created with
+@option{-A} (@option{--archive}).
+
+The only argument not starting with `-' or `+' will be
+treated as the pathname of the archive.
+
+When using -W (--write), there are a few additionally
+optional options you can use:
+
+@table @option
+@item --shared | [--full] | --old
+By using the option @option{--shared}
+you can restrict the reverted packages
+to packages that are both currently
+installed and included in the archive.
+
+Alternatively you can use @option{--old}
+to restrict to package that are included
+in the archive but is not currently
+installed.
+
+@option{--full}, which is implied if
+neither is used, can be used to
+revert or reinstall all packages that
+are included an in archive and uninstall
+package that are not included in the
+archive.
+
+@item --downgrade | --upgrade
+By default, packages are reverted without
+regarding their version. However, you can
+use either @option{--downgrade} or
+@option{--upgrade} to restrict to packages
+that are being downgraded or upgrade,
+respectively.
+
+@item --shred
+Remove old data by executing @command{shred}.
+@end table
+@end table
+
 
 
 
