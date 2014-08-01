@@ -53,6 +53,7 @@ Texts. A copy of the license is included in the section entitled
 @menu
 * Overview::                        Brief overview of @command{spike}.
 * Invoking::                        Invokation of @command{spike}.
+* I_USE-flags::                     Customising packages.
 * GNU Free Documentation License::  Copying and sharing this manual.
 @end menu
 
@@ -422,7 +423,7 @@ installation by using the option @option{-u}
 way. Particularly, packages installing command owned by root
 with setuid set should not be possible to install this way
 because you would not be able to execute it properly.
-There are also edge cases such as the kernel and
+There are also edge-cases such as the kernel and
 initialisation systems that cannot be installed this way
 either because it can only be execute before the user logs
 in.
@@ -635,36 +636,252 @@ optional options you can use:
 
 @table @option
 @item --shared | [--full] | --old
-By using the option @option{--shared}
-you can restrict the reverted packages
-to packages that are both currently
+By using the option @option{--shared} you can restrict
+the reverted packages to packages that are both currently
 installed and included in the archive.
 
-Alternatively you can use @option{--old}
-to restrict to package that are included
-in the archive but is not currently
-installed.
+Alternatively you can use @option{--old} to restrict to
+package that are included in the archive but is not
+currently installed.
 
-@option{--full}, which is implied if
-neither is used, can be used to
-revert or reinstall all packages that
-are included an in archive and uninstall
-package that are not included in the
-archive.
+@option{--full}, which is implied if neither is used, can
+be used to revert or reinstall all packages that are
+included an in archive and uninstall package that are not
+included in the archive.
 
 @item --downgrade | --upgrade
-By default, packages are reverted without
-regarding their version. However, you can
-use either @option{--downgrade} or
-@option{--upgrade} to restrict to packages
-that are being downgraded or upgrade,
-respectively.
+By default, packages are reverted without regarding their
+version. However, you can use either @option{--downgrade}
+or @option{--upgrade} to restrict to packages that are
+being downgraded or upgrade, respectively.
 
 @item --shred
 Remove old data by executing @command{shred}.
 @end table
 @end table
 
+
+
+@node I_USE-flags
+@chapter I_USE-flags
+
+I_USE-flags are environment variables used to customise
+package. I_USE-flags can be global or package-private.
+I_USE-flags can for example be used to specify what
+document format to install or what toolkit the program
+such be complied to use.
+
+The scrolls choose freely what I_USE-flag that support,
+and any non-supported I_USE-flag is simply ignored. It
+is also up to the scrolls to choose how they want to
+interpret the I_USE-flags and what their default values
+should be. This chapter however sets up guildlines that
+the scrolls should do their best to follow.
+
+Many flags are booleanic, they can either be true or false.
+Booleanic should be interpreted as true if and only if
+the value starts with a `y' or a `Y', and false if and
+only if the value starts with an `n' or an `N'.
+
+Standard booleanic I_USE-flags include:
+
+@table @env
+@item I_USE_INFO
+If set to true, the scroll should install @command{info}
+manuals if available.
+
+@item I_USE_PDF
+If set to true, the scroll should install manuals
+compiled to Portable Document Format documents if possible.
+
+@item I_USE_DVI
+If set to true, the scroll should install manuals
+compiled to Device Independent File Format documents if
+possible.
+
+@item I_USE_PS
+If set to true, the scroll should install manuals
+compiled to PostScript documents if possible.
+
+@item I_USE_HTML
+If set to true, the scroll should install manuals
+compiled to Hypertext Markup Language documents if possible.
+
+@item I_USE_MAN
+If set to true, the scroll should install @command{man}
+manuals if available.
+
+@item I_USE_MAN_ES
+If set to true, the scroll should install @command{man}
+manuals in Spanish (language code `es') if available.
+
+@item I_USE_MAN_JP
+If set to true, the scroll should install @command{man}
+manuals in Japanese (language code `jp') if available.
+
+@item I_USE_SKEL
+If set to true, the scroll should install configuration
+files @file{/etc/skel} if their are any candidates
+for this.
+
+@item I_USE_BASH
+If set to true, the scroll should install @command{bash}
+tab-completion scripts for package's commands
+if possible.
+
+@item I_USE_ZSH
+If set to true, the scroll should install @command{zsh}
+tab-completion scripts for package's commands
+if possible.
+
+@item I_USE_FISH
+If set to true, the scroll should install @command{fish}
+tab-completion scripts for package's commands
+if possible.
+
+@item I_USE_TTY
+If set to true, the user's of the system does not
+use a graphic environment and the scroll should
+avoid installing resources and commands that have
+no use from the TTY.
+@end table
+
+Similar to booleanic flags, I_USE-flags can also be
+tristate flags. One example of this is the standard
+I_USE-flag @env{I_USE_CLOSE_AS_ICONIFY}:
+
+@table @env
+@item I_USE_CLOSE_AS_ICONIFY
+When the value of this flag starts with a `y' or a
+`Y', the graphical programs should save their state
+and run in the background in some edge-case. However,
+if the value starts with an `n' or an `N' this should
+not be done. If the value starts with an `a' or an
+`A' (for `auto') the program should try to determine
+this be looking at environment variables such as the
+what desktop environment is used.
+@end table
+
+Some flags however are text strings.
+Standard string-I_USE-flags include:
+
+@table @env
+@item I_USE_BOOTDIR
+If set to `normal', a seperate @file{/boot} directory
+is available on the system, if the flag is set to `flat'
+@file{/boot} is a symbolic link to @file{/}. If however
+the value is `none' their is no @file{/boot} directory
+on the system.
+
+@item I_USE_SH
+The POSIX shell provider you use on your system, for
+example @command{bash} or @code{dash}. `a:b' means the
+command @command{b} that is provided by the package
+@command{a}, `c' is shorthand for `c:c'. Scrolls should
+avoid using this flag; however, if the the select
+should has a function difference it should be respected.
+
+For example, the @command{gates-of-tartaros} uses this
+flag to select which shell to use its command's
+(@command{got}) shebang. This affects how you configure
+@command{got} as you do it in the same shell script
+language is @command{got} is running under.
+@end table
+
+I_USE-flags can also have comma-separated lists of
+string for their values. These values are separated
+by a single command, not a comma–space-separated.
+Standard string list-I_USE-flags include:
+
+@table @env
+@item I_USE_LOCALE
+List of locates to install for the programs. These
+should be in order of preference incase the package
+hard-compiles a language into the binaries.
+
+@item I_USE_TOOLKIT
+Ordered list of prefered graphical toolkits for the
+program to use. For example: if the value is
+`gtk2,qt5,gtk3' and the program supports Qt 5 and
+GTK+ 3, but not GTK+ 2, the program should be
+compiled to use Qt 5.
+
+@item I_USE_DISPLAY
+List of display servers the user is using.
+@end table
+
+Features are best added as extensions rather than
+I_USE-flags, because it always for checking by
+dependency. However if that is not necessary,
+they could be specified with I_USE-flags.
+For example, if you do not use WiFi, no packages
+will need it so their is not reason to add it
+as an extension. Standard feature
+inclusion-I_USE-flags include, many of them
+are booleanic:
+
+@table @env
+@item I_USE_INFRARED
+If set to false, the scroll should avoid enabling
+support for infrared.
+
+@item I_USE_BLUETOOTH
+If set to false, the scroll should avoid enabling
+support for Bluetooth.
+
+@item I_USE_WIFI
+If set to false, the scroll should avoid enabling
+support for WiFi.
+
+@item I_USE_INTERNET
+If set to false, the scroll should try to disable
+features requiring Internet connectivitiy.
+This is useful if your computer does not have
+Internet connectivity.
+
+@item I_USE_NETWORK
+If set to false, the scroll should try to disable
+features requiring a computer network.
+Perhaps it is the only computer on the network.
+
+@item I_USE_BACKLIGHT
+If set to false, none of the computer's monitors
+have backlighting.
+
+@item I_USE_AUDIO
+If set to false, the scroll should try to disable
+features requiring audio.
+Perhaps the computer is a server in a server-farm.
+
+@item I_USE_CD
+List of CD features you want, - for none. Possible
+value include: read, write, rewrite, clone, play
+and rip.
+
+@item I_USE_DVD
+List of DVD features you want, - for none. Possible
+value include: read, write, rewrite, clone, play
+and rip.
+
+@item I_USE_HDDVD
+List of HDDVD features you want, - for none. Possible
+value include: read, write, rewrite, clone, play
+and rip.
+
+@item I_USE_BLURAY
+List of Blu-ray features you want, - for none.
+Possible value include: read, write, rewrite, clone,
+play and rip.
+@end table
+
+@command{spike} does not provide any interface for
+learning about which I_USE-flags a scroll support,
+how it interprets the flags or what their default
+values are. Rather, you should open the scroll
+in the ports tree with your text edit and read
+the scroll manually. Parsing of I_USE-flags should
+be at the top of the scroll directly below the
+copyright notice and the Python-module imports.
 
 
 
