@@ -54,8 +54,10 @@ Texts. A copy of the license is included in the section entitled
 * Overview::                        Brief overview of @command{spike}.
 * Invoking::                        Invokation of @command{spike}.
 * I_USE-flags::                     Customising packages.
+* Scroll specifications::           How a scroll is structured.
 * GNU Free Documentation License::  Copying and sharing this manual.
 @end menu
+@c TODO repositories and categories
 
 
 
@@ -882,6 +884,300 @@ in the ports tree with your text edit and read
 the scroll manually. Parsing of I_USE-flags should
 be at the top of the scroll directly below the
 copyright notice and the Python-module imports.
+
+
+
+@node Scroll specifications
+@chapter Scroll specifications
+
+Scrolls are descriptor for packages that contain
+metainformation and installation instruction,
+as a few other instructions.
+
+Scrolls are non-executable Python 3 scripts. They
+are used by @command{spike} by importing them
+rather than executabling them.
+
+It is customary for scrolls to be licensed under
+the GNU All Permissive License, exception are
+however allowed as long as the license is a
+Free Software licenses and is not contract based.
+
+Scrolls should being with a line that tells
+the text editors that the file is a Python file.
+
+Scroll licensed under GNU All Permissive License
+will start with:
+
+@example
+# -*- python -*-
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved.  This file is offered as-is,
+# without any warranty.  [GNUAllPermissive]
+@end example
+
+Additionally, scrolls uses a module named
+`dragonsuite' shipped with @command{spike}.
+So the next line in a scroll is generally:
+
+@example
+from dragonsuite import *
+@end example
+
+dragonsuite is written to make the scrolls more
+similar to shell scripts. It also includes custom
+functions that are common for scrolls, such as
+running @command{install-info} for all info
+manuals installed by the scroll, without having
+to list those files. When writing a scroll it is
+recommened to try to stick to dragonsuite. It is
+also discouraged to use more advanced functions
+and language features built into Python.
+
+A scrollfile must be named as its package name
+followed by `.scroll'. An example shot for a
+package must be named as the scrolls package
+name followed by `.png'; only Portable Network
+Graphics files are allowed. Additional files,
+such as patches, required by the scroll that
+is not available upstream must be named as
+the scroll's package name followed by `@@'
+and then something that describes or otherwise
+identifies the file. However, here `=' followed
+by the version of the package may be added
+to the package name if the scroll installs
+an older version of the package than the scroll
+without this installs.
+
+A scroll must declare a set of variable, and
+may declare some other variable:
+
+@table @var
+@item pkgname
+The name of the packages, must only contain lower case
+letter, digits, plus signs, underscores, dots and hyphens.
+The name may not start with a hyphen or a dot. The length
+of the name must not exceed 64 characters.
+
+@item pkgver
+The version of the software as released from the author.
+This string only contain lower case letter, digits, plus
+signs, underscores and dots.
+
+@item pkgrel
+The release number of the scroll, reset to 1 when
+@var{pkgver} is updated. This value is an integer and
+default to the value 1.
+
+@item epoch
+Increase by one if the package version is lower than the
+previous. That is, if the new package versioning system
+breaks version comparison logic. This value is an integer
+and default to the value 0.
+
+@item pkgdesc
+Brief description of the package, keep it on one line and
+try not to use the package's name.
+
+@item upstream
+The URL that is associated with the software being packaged.
+Typically the project's website.
+
+@item arch
+List of known microarchitecture compatibilities. The
+architecture's name for compatible, but prepended with an
+exclamation mark for not compatible. The architecture names
+are in lowercase. If architecture independent, the only
+architecture should be `any`. For example:
+@code{arch = ['ia-32', '!x86_64']} for supported by
+IA-32@footnote{Sometimes called i386 through metonymy} but
+not by x86_64, or @code{arch = ['any']} if microarchitecture
+independent.
+
+@item freedom
+An integer value constructed from the bitwise OR of
+named constants. These constants are:
+@table @code
+@item SOFTWARE
+This is a macro for
+@code{SOFTWARE_SHAREABLE | SOFTWARE_COMMERCIAL | SOFTWARE_DERIVATIVE}.
+It should be used if the software and all required resouce files are free,
+or if no such files are included in the package.
+
+@item MEDIA
+This is a macro for
+@code{MEDIA_SHAREABLE | MEDIA_COMMERCIAL | MEDIA_DERIVATIVE}.
+It should be used if the all merely augmented media files to the
+software, or if all files for a media package, is free or if no
+such files are included in the package.
+
+@item SOFTWARE_SHAREABLE
+This flag should be used if the files covered by @code{SOFTWARE}
+are shareable. Thas is, they can be used any purpose and can be
+redistributed without a fee, however possibly not in a commercial
+context.
+
+@item MEDIA_SHAREABLE
+This flag should be used if the files covered by @code{MEDIA}
+are shareable. Thas is, they can be used any purpose and can be
+redistributed without a fee, however possibly not in a commercial
+context.
+
+@item SOFTWARE_COMMERCIAL
+This flag should be used if the files covered by @code{SOFTWARE}
+can be commercially redistributed without a fee.
+
+@item MEDIA_COMMERCIAL
+This flag should be used if the files covered by @code{MEDIA}
+can be commercially redistributed without a fee.
+
+@item SOFTWARE_DERIVATIVE
+This flag should be used if derivatives of the files covered
+by @code{SOFTWARE} are can be redistributed without a fee.
+Derivative files may only be commerically redistributed if
+@code{SOFTWARE_COMMERCIAL} is also used.
+
+@item MEDIA_DERIVATIVE
+This flag should be used if derivatives of the files covered
+by @code{MEDIA} are can be redistributed without a fee.
+Derivative files may only be commerically redistributed if
+@code{MEDIA_COMMERCIAL} is also used.
+
+@item TRADEMARKED
+This flag should be used if there is trademark protections
+in the package, keep in mind that outside the U.S. it may not
+be necessary to use symbols to indicate such protections.
+
+@item PATENTED
+This flag should be used if the package contains patented
+information, or patent pending information if the patent
+is filed in a jurisdiction where it does not void the
+patent to publish the information with a patent is pending.
+@end table
+
+If none of these flags fit you should use the value 0.
+
+@item license
+A list of licenses that applies to the installed parts
+of the package. The license name should be abbreviated
+in accordance to the license's name in
+@file{/usr/share/licenses/common}@footnote{Installed
+by the package @command{licenses}}. If the license
+is not included in this directory it should be prefixed
+with `custom:'. However if the licenses is specific to
+the package `custom' should be used. You can also declare
+what part of the package a license cover, this is done by
+adding a short text after the license name delimited by
+`: '. For example @command{'FDL1.3: manual'} if the
+manual included in the package is licenses under GNU
+Free Documentation License version 1.3.
+
+@item metalicense
+This variable is optionally, if not specified, you can
+either leave it undeclared or set it to @code{None}.
+If specified to must be a list of the same length as
+@var{license}. The n:th element is this list is a
+metainformation descriptor for the n:th license in
+@var{license}. If you want to omit this for a license
+you can set the corresponding element in this list to
+@code{None}. Included license metainformation is
+described by a 2-tuple, where the first element is
+as an integer constructed from name constants that
+describes that features the licese has. The second
+element in the tuple specifies what is know in the
+same what it must contain at least the same flags
+as the first element. For example:
+@example
+license = ['custom:fictional', 'nBSD']
+metalicense = [(SHAREABLE, SHAREABLE | DERIVATIVE), None]
+@end example
+means that the license `fictional' makes the work
+shareable but does not allow redistribution of
+derivatives without a fee, and that no other
+metainformation about `fictional' is known and
+that no information about `nBSD' is known is known.
+
+The flags can be used for these values are:
+@table @code
+@item NO_TRADEMARKS
+The license prohibits trademark protection.
+
+@item NO_PATENTS
+The license patent protection.
+
+@item CONTRACT_BASED
+The license is contract based, you need to
+agree to it before you use the package.
+
+@item SHAREABLE
+The covered work can be used for any purpose
+and can be redistributed without a fee.
+
+@item COMMERCIAL
+The covered work can be commercially
+redistributed without a fee.
+
+@item DERIVATIVE
+Derivative work can be redistributed without a
+fee. Derivative work can be redistributed
+commerically if and only if @code{COMMERCIAL}
+is used.
+
+@item FSF_APPROVED
+The license is approved by the Free Software Foundation.
+
+@item OSI_APPROVED
+The license is approved by the Open Source Initiative.
+
+@item GPL_COMPATIBLE
+The license if GNU General Publice License compatible.
+
+@item COPYLEFT
+The license is a copyleft license.
+@end table
+
+@item private
+An integer value that should be either of the following
+values:
+
+@table @code
+@item UNSUPPORTED
+The package cannot be installed with the
+@option{--private} option.
+
+@item SUPPORTED
+The package may be installed with the
+@option{--private} option.
+
+@item MANDITORY
+The package must be installed with the
+@option{--private} option.
+@end table
+
+@code{UNSUPPORTED} is assumed if this variable is not
+declared.
+
+@item interactive
+This variable can be set to either @code{True} or
+@code{False}, if not specified @code{False} is used.
+Should be set to @code{True} if installation of the
+package requires interaction, which you should go out
+of your way to avoid. This is for example needed
+if a licenses used by the package is contract based.
+@end table
+
+Some of these variable may depend on I_USE-flags.
+
+Package name, except for in @var{pkgname} have a range
+of targeted versions using in the format
+@code{(<|<=|>|>=|=|<>)[epoch:]pkgver} or
+@code{>[=][epoch:]pkgver<[=][epoch:]pkgver}.
+
+Variable and function used by the scroll and that is not
+covered by this specification should started with an `_'
+to avoid name conflicts with @command{spike}.
+
 
 
 
