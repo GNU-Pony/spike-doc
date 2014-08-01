@@ -1439,6 +1439,22 @@ Variables and functions used by the scroll and that is not
 covered by this specification should started with an `_'
 to avoid name conflicts with @command{spike}.
 
+It is customary to have the following order of inclusion
+for content in a scroll:
+
+@itemize
+@item
+Reading of I_USE-flags.
+@item
+Parsing of I_USE-flags.
+@item
+Scroll descriptors (variables) and help variables.
+@item
+Help functions.
+@item
+Scroll instructions (functions).
+@end itemize
+
 
 
 
