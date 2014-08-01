@@ -1320,6 +1320,121 @@ of targeted versions using in the format
 @code{>[=][epoch:]pkgver<[=][epoch:]pkgver}, with is
 appended to the package name.
 
+In addition to these descriptions, scrolls also contain
+instructions in form of functions. It is customary to
+include these functions in the order they are listed here.
+However only @code{package} is always needed, but
+@code{ride} should always be included, the rest should
+be added as fit.
+
+@table @code
+@item ride(private)
+Execute the program installed by the package,
+if their is no way to do so or to know what the
+user wants to do, it should print some help
+information or open a manual.
+
+@item build(startdir, srcdir, pkgdir, private)
+Compile the package.
+
+@item check(startdir, srcdir, pkgdir, private)
+Check that the compiled files are correctly compiled.
+Some software packages let you do this by
+running @command{make check}, which in scrolls
+would be @code{make('check')}.
+
+@item package(startdir, srcdir, pkgdir, private)
+Install files into @var{pkgdir} before installing to
+the system.
+
+@item patch_build(startdir, srcdir, pkgdir, private)
+Apply patch to target during the target's @code{build}.
+
+@item patch_check(startdir, srcdir, pkgdir, private)
+Apply patch to target during the target's @code{check}.
+
+@item patch_package(startdir, srcdir, pkgdir, private)
+Apply patch to target during the target's @code{package}.
+
+@item pre_install(tmpdir, rootdir, private)
+This function will, if defined, be called some time
+before files are installed to the system. Exactly when
+is not welldefined, you cannot assume that any files
+have been compiled. It is only called if the package
+is not already installed.
+
+@item post_install(tmpdir, rootdir, installedfiles, private)
+This function will, if defined, be called after the files
+installed by @code{package} have been transferred into
+the target system. It is only called if the package was
+not already installed.
+
+@item pre_upgrade(tmpdir, rootdir, installedfiles, private)
+This function is identical to @code{pre_install}, except it,
+in addition to having the @var{installedfiles} parameter, will
+only be called if the package is already installed.
+
+@item post_upgrade(tmpdir, rootdir, installedfiles, private)
+This function is identical to @code{post_install}, except it
+will only be called if the package was already installed.
+
+@item pre_uninstall(tmpdir, rootdir, installedfiles, private)
+This function will, if defined, be called before the package
+is uninstalled.
+
+@item post_uninstall(tmpdir, rootdir, installedfiles, private)
+This function will, if defined, be called when the package
+has been uninstalled.
+@end table
+
+For all of these functions, that has these variables:
+
+@table @var
+@item startdir
+The parent directory for @var{srcdir} and
+@var{pkgdir}.
+
+@item srcdir
+The root directory of the source file. Files
+extracted from source files are stored here
+as well as downloaded files, included the
+extracted archives, and listed files from
+the ports tree.
+
+@item pkgdir
+The root directory of the installed files.
+Files are installed here by the scroll and
+then moved into @file{/} by @command{spike}.
+Makefiles often have a variable named
+@var{DESTDIR} that should be set to have
+this as its value.
+
+@item tmpdir
+A directory you may use to store temporary
+files during the function call.
+
+@item rootdir
+The target system's root directory's mountpoint
+on the host system.
+
+@item installedfiles
+A list of all files installed by the scroll.
+
+For @code{post_install} and @code{post_upgrade}
+this will be the files installed by the new
+version of the scroll, for other functions it
+will be the files installed by the old version
+of the scroll.
+
+@item private
+Will be set to @code{True} if the package is
+installed or is being installed as a user-private
+package, otherwise it will be set to @code{False}.
+@end table
+
+Neither of these function have any return value, on error
+an exception should be risen.
+
 Variables and functions used by the scroll and that is not
 covered by this specification should started with an `_'
 to avoid name conflicts with @command{spike}.
@@ -1332,44 +1447,4 @@ to avoid name conflicts with @command{spike}.
 @include fdl.texinfo
 
 @bye
-
-
-ride(private:bool):void
-	Execute installed package.
-
-build(startdir:str, srcdir:str, pkgdir:str, private:bool):void
-	Build package.
-
-check(startdir:str, srcdir:str, pkgdir:str, private:bool):void
-	Check files after building.
-
-package(startdir:str, srcdir:str, pkgdir:str, private:bool):void
-	Install files into `pkgdir` before installing to the system.
-
-patch_build(startdir:str, srcdir:str, pkgdir:str, private:bool):void
-	Apply patch to target during the target's build().
-
-patch_check(startdir:str, srcdir:str, pkgdir:str, private:bool):void
-	Apply patch to target during the target's check().
-
-patch_package(startdir:str, srcdir:str, pkgdir:str, private:bool):void
-	Apply patch to target during the target's package().
-
-pre_install(tmpdir:str, rootdir:str, private:bool):void
-	Run before files are installed in a fresh installation
-
-post_install(tmpdir:str, rootdir:str, installedfiles:list<str>, private:bool):void
-	Run after files are installed in a fresh installation
-
-pre_upgrade(tmpdir:str, rootdir:str, installedfiles:list<str>, private:bool):void
-	Run before upgraded files are installed
-
-post_upgrade(tmpdir:str, rootdir:str, installedfiles:list<str>, private:bool):void
-	Run after upgraded files are installed
-
-pre_uninstall(tmpdir:str, rootdir:str, installedfiles:list<str>, private:bool):void
-	Run before uninstallation of files
-
-post_uninstall(tmpdir:str, rootdir:str, installedfiles:list<str>, private:bool):void
-	Run after uninstallation of files
 
