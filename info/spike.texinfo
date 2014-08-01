@@ -1165,6 +1165,149 @@ Should be set to @code{True} if installation of the
 package requires interaction, which you should go out
 of your way to avoid. This is for example needed
 if a licenses used by the package is contract based.
+
+@item conflicts
+If the package cannot be installed on the system
+at the same time as some other scrolls, this variable
+should be declared and list the those packages.
+
+@item replaces
+If the package is replacement for some other scrolls,
+or uses the new name for a package, this variable
+should be declared and list the old packages.
+
+@item provides
+This is an optional list of virtual packages provided
+by the package. Virtual packages can be commands
+such as @command{sh} that multiple package can provide
+or another package.
+
+@item extension
+This variable should be declared and name a package
+that this package extends if the package is meaningless
+without that package. This implies runtime dependency
+upon the named package.
+
+For example:
+@example
+pkgname = 'emacs-xyz-mode'
+extension = 'emacs'
+@end example
+
+@item variant
+Package that the package is an variant of, may or may not be
+installed at the same time. It is implied that the package
+provides the package of which it is an variant. If the package
+is not a variant of another package it should not declare
+this variant, or give it the value @code{None}.
+
+For example:
+@example
+pkgname = 'ponysay+nonfree'
+variant = 'ponysay'
+@end example
+
+@item patches
+Package that the package patches when that package is built.
+This variable is optional.
+
+For example:
+@example
+pkgname = 'xorg-server-hwcursor-gamma'
+patches = 'xorg-server'
+@end example
+
+@item reason
+Reason why the scroll has been placed in its current repository.
+This variable is optional but should be used on all scrolls in
+the `limbo' repository.
+
+For example:
+@example
+# rssyl.scroll in limbo:
+pkgname = 'rssyl'
+extension = 'claws-mail'
+reason = 'rssyl has been merged into mainline claws-mail'
+
+# claws-mail.scroll:
+pkgname = 'claws-mail'
+replaces = ['rssyl']
+provides = ['rssyl']
+@end example
+
+@item patchbefore
+Other patches the patch must be applied before.
+
+@item patchafter
+Other patches that must be applied before the patch.
+
+@item groups
+Package groups to which the package belongs, symbolic names that
+allow installation of multiple packages by specifying one name.
+
+@item depends
+Packages required by the package at runtime,
+may be omitted if none.
+
+@item makedepends
+Packages required by the package at maketime,
+may be omitted if none.
+
+@item checkdepends
+Packages required by the package at checktime,
+may be omitted if none. All dependencies in makedepends
+are automatically included.
+
+@item optdepends
+Optional packages that add functionality to the package at
+runtime, may be omitted if none.
+
+A description of when the optional dependency is used
+should be added after the name of the package with
+a `: '-delimiter.
+
+@item source
+List of source files to downloaded, may be the filename
+of a file included in the ports tree at the same directory
+as the scroll. If the URL of a source file is not sufficient
+a string list can be used, where the first element is the
+source URL, and second element is the destination filename,
+and all additional elements are arguments to add when
+invoking @command{wget}.
+
+@item optdepends
+Sources that should not be extracted, may be omitted if none.
+
+@item sha3sums
+Keccak[]@footnote{That is, Keccak with the default configuration,
+we use this because @command{spike} predates SHA-3's inclusion
+in the Secure Hash Standard.} checksums of the source files,
+must be in the same order as in @var{sources}. Use
+@command{spike -3} to make sure that the checksum uses the
+correct configurations.
+
+@item backup
+Pathnames of files to should be backup, may be omitted if
+none. This is commonly used for files in @file{/etc}.
+
+@item options
+Override user configurations, options prepended by an
+exclamation mark are turned off, others are turned on.
+
+@table @code
+@item strip
+Strip symbols from binaries and libraries.
+@item licenses
+Keep files installed to @file{/share/licenses} with
+any prefix.
+@item changelogs
+Keep files installed to @file{/share/changelogs} with
+any prefix.
+@item libtool
+Leave .la-files in packages.
+@item upx
+Compress binary executable files using UPX.
+@end table
 @end table
 
 Some of these variable may depend on I_USE-flags.
@@ -1174,7 +1317,7 @@ of targeted versions using in the format
 @code{(<|<=|>|>=|=|<>)[epoch:]pkgver} or
 @code{>[=][epoch:]pkgver<[=][epoch:]pkgver}.
 
-Variable and function used by the scroll and that is not
+Variables and functions used by the scroll and that is not
 covered by this specification should started with an `_'
 to avoid name conflicts with @command{spike}.
 
@@ -1186,4 +1329,44 @@ to avoid name conflicts with @command{spike}.
 @include fdl.texinfo
 
 @bye
+
+
+ride(private:bool):void
+	Execute installed package.
+
+build(startdir:str, srcdir:str, pkgdir:str, private:bool):void
+	Build package.
+
+check(startdir:str, srcdir:str, pkgdir:str, private:bool):void
+	Check files after building.
+
+package(startdir:str, srcdir:str, pkgdir:str, private:bool):void
+	Install files into `pkgdir` before installing to the system.
+
+patch_build(startdir:str, srcdir:str, pkgdir:str, private:bool):void
+	Apply patch to target during the target's build().
+
+patch_check(startdir:str, srcdir:str, pkgdir:str, private:bool):void
+	Apply patch to target during the target's check().
+
+patch_package(startdir:str, srcdir:str, pkgdir:str, private:bool):void
+	Apply patch to target during the target's package().
+
+pre_install(tmpdir:str, rootdir:str, private:bool):void
+	Run before files are installed in a fresh installation
+
+post_install(tmpdir:str, rootdir:str, installedfiles:list<str>, private:bool):void
+	Run after files are installed in a fresh installation
+
+pre_upgrade(tmpdir:str, rootdir:str, installedfiles:list<str>, private:bool):void
+	Run before upgraded files are installed
+
+post_upgrade(tmpdir:str, rootdir:str, installedfiles:list<str>, private:bool):void
+	Run after upgraded files are installed
+
+pre_uninstall(tmpdir:str, rootdir:str, installedfiles:list<str>, private:bool):void
+	Run before uninstallation of files
+
+post_uninstall(tmpdir:str, rootdir:str, installedfiles:list<str>, private:bool):void
+	Run after uninstallation of files
 
