@@ -991,7 +991,7 @@ exclamation mark for not compatible. The architecture names
 are in lowercase. If architecture independent, the only
 architecture should be `any`. For example:
 @code{arch = ['ia-32', '!x86_64']} for supported by
-IA-32@footnote{Sometimes called i386 through metonymy} but
+IA-32@footnote{Sometimes called i386 through metonymy.} but
 not by x86_64, or @code{arch = ['any']} if microarchitecture
 independent.
 
