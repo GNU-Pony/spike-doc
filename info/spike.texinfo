@@ -1284,7 +1284,9 @@ we use this because @command{spike} predates SHA-3's inclusion
 in the Secure Hash Standard.} checksums of the source files,
 must be in the same order as in @var{sources}. Use
 @command{spike -3} to make sure that the checksum uses the
-correct configurations.
+correct configurations. If a file does not need to be integrity
+checked, @code{None} may be used instead of a checksum; this
+should only be done on files that are in the ports tree.
 
 @item backup
 Pathnames of files to should be backup, may be omitted if
@@ -1315,7 +1317,8 @@ Some of these variable may depend on I_USE-flags.
 Package name, except for in @var{pkgname} have a range
 of targeted versions using in the format
 @code{(<|<=|>|>=|=|<>)[epoch:]pkgver} or
-@code{>[=][epoch:]pkgver<[=][epoch:]pkgver}.
+@code{>[=][epoch:]pkgver<[=][epoch:]pkgver}, with is
+appended to the package name.
 
 Variables and functions used by the scroll and that is not
 covered by this specification should started with an `_'
